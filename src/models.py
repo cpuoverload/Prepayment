@@ -1,5 +1,6 @@
 from typing import Dict, List
 import pandas as pd
+import datetime
 import config
 from utils import get_last_day_of_month
 
@@ -54,16 +55,23 @@ class PrepaymentManager:
         """Load data from Excel/CSV and create Prepayment objects"""
         df = pd.read_excel(self.filepath, skiprows=2)  # skip first two rows
         df = df[df["Items"].notna()]  # remove rows where "Items" is NaN
+
+        # select the date columns
+        date_columns = [col for col in df.columns if isinstance(col, datetime.datetime)]
+
         # convert datetime to str (e.g. Jan 2024)
         df.rename(
-            columns={col: col.strftime("%b %Y") for col in df.columns[3:-1]},
+            columns={col: col.strftime("%b %Y") for col in date_columns},
             inplace=True,
         )
 
+        # update the date columns to be strings
+        date_columns = [col.strftime("%b %Y") for col in date_columns]
+
         for _, row in df.iterrows():
             schedule = (
-                row.iloc[3:-1].dropna().to_dict()
-            )  # remove the first 3 columns and the last column, and drop NaN values
+                row[date_columns].dropna().to_dict()
+            )  # pick the date columns and drop NaN values
 
             self.prepayments.append(
                 Prepayment(
