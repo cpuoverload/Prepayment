@@ -20,3 +20,9 @@ Please input the month (e.g. Apr 2024):
 ```
 
 The output will be saved to `data/Accounting Entries.csv`.
+
+## Tests
+
+```bash
+pytest
+```
