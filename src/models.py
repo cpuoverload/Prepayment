@@ -1,3 +1,4 @@
+from typing import Dict, List
 import pandas as pd
 import config
 from utils import get_last_day_of_month
@@ -7,14 +8,18 @@ class Prepayment:
     """Represents a prepayment item, such as Webhosting"""
 
     def __init__(
-        self, item_name, invoice_number, invoice_amount, amortization_schedule
-    ):
+        self,
+        item_name: str,
+        invoice_number: str,
+        invoice_amount: float,
+        amortization_schedule: Dict[str, float],
+    ) -> None:
         self.item_name = item_name
         self.invoice_number = invoice_number
         self.invoice_amount = invoice_amount
         self.amortization_schedule = amortization_schedule
 
-    def generate_entries(self, month):
+    def generate_entries(self, month: str) -> List[Dict[str, str | float]]:
         """Generate accounting entries for a specific month"""
         amount = self.amortization_schedule.get(month, 0)
         if amount == 0:
@@ -41,11 +46,11 @@ class Prepayment:
 class PrepaymentManager:
     """Manages multiple prepayment items"""
 
-    def __init__(self, filepath):
+    def __init__(self, filepath: str) -> None:
         self.filepath = filepath
-        self.prepayments = []
+        self.prepayments: List[Prepayment] = []
 
-    def load_data(self):
+    def load_data(self) -> None:
         """Load data from Excel/CSV and create Prepayment objects"""
         df = pd.read_excel(self.filepath, skiprows=2)  # skip first two rows
         df = df[df["Items"].notna()]  # remove rows where "Items" is NaN
@@ -66,7 +71,7 @@ class PrepaymentManager:
                 )
             )
 
-    def generate_entries_for_month(self, month):
+    def generate_entries_for_month(self, month: str) -> pd.DataFrame:
         """Generate accounting entries for a specific month for all prepayment items"""
         entries = []
         for prepayment in self.prepayments:
